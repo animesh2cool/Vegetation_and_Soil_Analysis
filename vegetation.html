@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegetation Analysis - VegeSegment</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-green: #2d5016;
+            --secondary-green: #4a7c2d;
+            --light-green: #7fb069;
+            --accent-green: #8bc34a;
+            --dark-bg: #1a2f0f;
+            --light-bg: #f1f8e9;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+            min-height: 100vh;
+        }
+        
+        /* Top Navigation */
+        .top-nav {
+            background: rgba(29, 53, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-brand i {
+            color: var(--accent-green);
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-green), var(--secondary-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .btn-logout {
+            background: rgba(244, 67, 54, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(244, 67, 54, 1);
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            background: white;
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .upload-zone {
+            border: 3px dashed var(--accent-green);
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--secondary-green);
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            transform: scale(1.02);
+        }
+        
+        .upload-zone.dragover {
+            border-color: var(--secondary-green);
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        .model-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .model-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            text-align: center;
+        }
+        
+        .model-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .model-card.selected {
+            border-color: var(--secondary-green);
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            box-shadow: 0 5px 20px rgba(74, 124, 45, 0.3);
+        }
+        
+        .model-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .btn-segment {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--secondary-green) 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(139, 195, 74, 0.4);
+        }
+        
+        .btn-segment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 195, 74, 0.6);
+        }
+        
+        .btn-segment:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .result-image {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .metrics-card {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-available {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .status-unavailable {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .model-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-info span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/" class="nav-brand">
+                    <i class="bi bi-flower1"></i>
+                    VegeSegment
+                </a>
+                <div class="nav-links" style="display: flex; gap: 20px; align-items: center;">
+                    <a href="/vegetation" class="nav-link-item" style="color: rgba(255, 255, 255, 0.9); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 20px; transition: all 0.3s ease; background: var(--accent-green);">
+                        <i class="bi bi-tree"></i> Vegetation
+                    </a>
+                    <a href="/soil" class="nav-link-item" style="color: rgba(255, 255, 255, 0.9); text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 20px; transition: all 0.3s ease;">
+                        <i class="bi bi-globe"></i> Soil Detection
+                    </a>
+                </div>
+                <div class="user-section">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userEmail">user@example.com</span>
+                    </div>
+                    <button class="btn btn-logout" onclick="logout()">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="bi bi-cpu"></i> Vegetation Analysis Tool</h1>
+            <p>Upload images and analyze vegetation coverage with AI</p>
+        </div>
+        
+        <div class="row">
+            <!-- Left Panel - Upload & Controls -->
+            <div class="col-lg-6">
+                <div class="card p-4">
+                    <h3 class="mb-4"><i class="bi bi-cloud-upload"></i> Upload Image</h3>
+                    
+                    <!-- Upload Zone -->
+                    <div class="upload-zone" id="uploadZone">
+                        <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                        <h5>Drag & Drop or Click to Upload</h5>
+                        <p class="text-muted">Supports: JPG, PNG, JPEG</p>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div id="previewContainer" style="display: none;">
+                        <img id="previewImage" class="preview-image" alt="Preview">
+                    </div>
+                    
+                    <!-- Model Selection -->
+                    <div class="mt-4">
+                        <h5 class="mb-3"><i class="bi bi-cpu"></i> Select AI Model</h5>
+                        <div class="model-selector" id="modelSelector">
+                            <!-- Models will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Segment Button -->
+                    <div class="text-center mt-4">
+                        <button class="btn btn-segment" id="segmentBtn" disabled>
+                            <i class="bi bi-magic"></i> Analyze Vegetation
+                        </button>
+                    </div>
+                    
+                    <!-- Loading Spinner -->
+                    <div class="text-center mt-3" id="loadingSpinner" style="display: none;">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <p class="mt-2">Processing image...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Results -->
+            <div class="col-lg-6">
+                <div class="card p-4">
+                    <h3 class="mb-4"><i class="bi bi-bar-chart-fill"></i> Analysis Results</h3>
+                    
+                    <div id="resultsContainer" style="display: none;">
+                        <!-- Result Image -->
+                        <div class="result-container">
+                            <img id="resultImage" class="result-image" alt="Segmentation Result">
+                        </div>
+                        
+                        <!-- Metrics -->
+                        <div class="metrics-card">
+                            <h5 class="mb-3"><i class="bi bi-graph-up"></i> Vegetation Metrics</h5>
+                            
+                            <div class="metric-item">
+                                <span class="metric-label"><i class="bi bi-pie-chart"></i> Vegetation Coverage</span>
+                                <span class="metric-value" id="vegetationPercent">--</span>
+                            </div>
+                            
+                            <div class="metric-item">
+                                <span class="metric-label"><i class="bi bi-grid-3x3"></i> Total Pixels</span>
+                                <span class="metric-value" id="totalPixels">--</span>
+                            </div>
+                            
+                            <div class="metric-item">
+                                <span class="metric-label"><i class="bi bi-tree"></i> Vegetation Pixels</span>
+                                <span class="metric-value" id="vegetationPixels">--</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Download Button -->
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-success" id="downloadBtn" style="border-radius: 25px; padding: 10px 30px; font-weight: 600;">
+                                <i class="bi bi-download"></i> Download Result
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Placeholder -->
+                    <div id="resultsPlaceholder" class="text-center text-muted" style="padding: 100px 20px;">
+                        <i class="bi bi-image" style="font-size: 5rem; opacity: 0.3; color: var(--accent-green);"></i>
+                        <p class="mt-3">Upload an image and select a model to see results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check authentication
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('isAuthenticated') !== 'true') {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Set user info
+            const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+            document.getElementById('userEmail').textContent = userEmail;
+            document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
+        });
+        
+        function logout() {
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('rememberMe');
+            window.location.href = '/login';
+        }
+        
+        const API_URL = 'http://localhost:8000';
+        let selectedFile = null;
+        let selectedModel = null;
+        
+        // Elements
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const modelSelector = document.getElementById('modelSelector');
+        const segmentBtn = document.getElementById('segmentBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsPlaceholder = document.getElementById('resultsPlaceholder');
+        const resultImage = document.getElementById('resultImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        // Load available models
+        async function loadModels() {
+            try {
+                const response = await fetch(`${API_URL}/models`);
+                const data = await response.json();
+                
+                modelSelector.innerHTML = '';
+                data.models.forEach(model => {
+                    const modelCard = document.createElement('div');
+                    modelCard.className = 'model-card';
+                    modelCard.innerHTML = `
+                        <div class="model-icon">${getModelIcon(model.name)}</div>
+                        <h6>${model.display_name}</h6>
+                        <small class="text-muted">${model.description}</small>
+                        <span class="status-badge ${model.available ? 'status-available' : 'status-unavailable'}">
+                            ${model.available ? 'Available' : 'Not Found'}
+                        </span>
+                    `;
+                    
+                    if (model.available) {
+                        modelCard.addEventListener('click', () => selectModel(model.name, modelCard));
+                    } else {
+                        modelCard.style.opacity = '0.5';
+                        modelCard.style.cursor = 'not-allowed';
+                    }
+                    
+                    modelSelector.appendChild(modelCard);
+                });
+            } catch (error) {
+                console.error('Error loading models:', error);
+                alert('Failed to connect to backend. Please ensure the API server is running on port 8000.');
+            }
+        }
+        
+        function getModelIcon(modelName) {
+            const icons = {
+                'unet': '🏥',
+                'deeplab': '🔬',
+                'yolo': '⚡'
+            };
+            return icons[modelName] || '🤖';
+        }
+        
+        function selectModel(modelName, element) {
+            selectedModel = modelName;
+            document.querySelectorAll('.model-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            updateSegmentButton();
+        }
+        
+        // File Upload Handlers
+        uploadZone.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+            
+            selectedFile = file;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            
+            updateSegmentButton();
+        }
+        
+        function updateSegmentButton() {
+            segmentBtn.disabled = !(selectedFile && selectedModel);
+        }
+        
+        // Segmentation
+        segmentBtn.addEventListener('click', async () => {
+            if (!selectedFile || !selectedModel) return;
+            
+            segmentBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            try {
+                const response = await fetch(`${API_URL}/segment/${selectedModel}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultImage.src = data.image;
+                    document.getElementById('vegetationPercent').textContent = data.metrics.vegetation_percentage + '%';
+                    document.getElementById('totalPixels').textContent = data.metrics.total_pixels.toLocaleString();
+                    document.getElementById('vegetationPixels').textContent = data.metrics.vegetation_pixels.toLocaleString();
+                    
+                    resultsPlaceholder.style.display = 'none';
+                    resultsContainer.style.display = 'block';
+                } else {
+                    alert('Error processing image');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to process image. Make sure the backend server is running on http://localhost:8000');
+            } finally {
+                loadingSpinner.style.display = 'none';
+                segmentBtn.disabled = false;
+            }
+        });
+        
+        // Download Result
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = resultImage.src;
+            link.download = 'vegetation_segmentation_result.png';
+            link.click();
+        });
+        
+        // Initialize
+        loadModels();
+    </script>
+</body>
+</html>
